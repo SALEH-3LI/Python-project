@@ -1,0 +1,144 @@
+#import library
+import json
+import datetime
+import os
+from collections import Counter
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+
+# Read csv file and extract required data
+csv_file='crime.csv'
+data = pd.read_csv(csv_file)
+ncic = list(data["ucr_ncic_code"])
+district = list(data["district"])
+beat = list(data["beat"])
+
+# Function to count numbers for given range
+def count_range_in_list(li, min, max):
+    ctr = 0
+    for x in li:
+        if min <= x <= max:
+            ctr += 1
+    return ctr
+# Function to count given element in list
+def countX(li, x): 
+    count = 0
+    for ele in li: 
+        if (ele == x): 
+            count = count + 1
+    return count 
+# While loop 
+while True:
+    print('\n---------------Enter number 1-4 to select from given options------------')
+    menu = """
+        1. Generate a Crime Report
+        2. Display Crime for Specific Beat Number
+        3. Create 'NCIC vs Count' Bar chart
+        4. Quit Program""" 
+    print(menu)
+    selection = input('\nEnter your selection: ')
+# Defining and selection of menu options
+    if selection == '1':
+        print("\n \n ****  Crime Report  ****")	
+        print("\n** List of Numbers of Crimes based on ncic Numbers")
+        print("\n NCIC Range   No of Crimes")
+        ctg = 1
+        min = 0
+        min = int(min)
+        max = 999
+        max = int(max)
+        range_v = []
+        count_ncic = []
+        # loop to count numbers for given ranges
+        while ctg < 10:
+            count = (count_range_in_list(ncic, min, max))
+            count_ncic.append(count)
+            v = (min, max)
+            range_v.append(v)
+            
+            if ctg == 1:
+                print ("  ",min ,"-", max, "  -", count)
+            else:
+                print (min ,"-", max, " -", count)
+            min = min+1000
+            max = max+1000
+            ctg +=1
+            
+        
+        count_dist = Counter(district)
+        print ("\n ** List of Numbers of crimes W.r.t District **")
+        print ("\n District  No. of crimes")
+        dist_list = []
+        dist_crime = []
+        for key, value in count_dist.items():
+            print(" ", key, "     -", value)
+            dist_list.append(key)
+            dist_crime.append(value)
+	# Count number of crimes for each beat
+        count_beat = Counter(beat)
+        print ("\n ** List of Numbers of crimes W.r.t Beats **")
+        print ("\n Beat  No. of crimes")
+        beat_list = []
+        beat_crime = []
+        for key, value in count_beat.items():
+            print(" ", key, " -", value)
+            beat_list.append(key)
+            beat_crime.append(value)
+        
+        #create dictionary
+        attr = []
+        attr = ['ncic range', 'district', 'beat']
+        dictionary = dict(zip(attr, zip(zip(range_v, count_ncic), zip(dist_list, dist_crime), zip(beat_list, beat_crime))))
+        print("\n*.json file has been created*")
+        
+        #export file
+        filename = datetime.datetime.now()
+        with open(filename.strftime("%B")+".json", 'w') as fp:
+            json.dump(dictionary, fp)
+        
+            
+    if selection == '2':
+        # Filter setup for beat
+        user_filter = input('\nEnter beat to be filter (Case sensitive): ')
+        # Sort Data on the basis of ncic number
+        sort_by_ncic = data.sort_values('ucr_ncic_code')
+        filtered_data = sort_by_ncic[sort_by_ncic['beat'].str.contains(user_filter)]  
+        print (filtered_data)
+    
+    if selection == '3':
+        print ("\n Enter 5 ncic numbers to be added to Bar graph")
+        user_ncic = []
+        ncic_count = []
+        i=1
+	#loop to take ncic from user and count crimes for each
+        while i <= 5:
+            number = (int(input()))
+            c = countX(ncic, number)
+            user_ncic.append(number)
+            ncic_count.append(c)
+            i +=1
+	# Display and save bar graph
+        pos = np.arange(len(user_ncic))   
+        plt.bar(pos, ncic_count)
+        plt.xlabel('NCIC Number')
+        plt.ylabel('No of Crimes')
+        plt.xticks(pos, user_ncic)
+        plt.title(input("\n Enter the title for the Graph: "))
+        plt.savefig('plot_bar.png')
+        print("\n* Graph has been saved as .PNG*")
+        plt.show()
+        
+    if selection == '4':
+        print ("\n ****  Quitted ****")
+        
+        break
+        
+    else:
+        print ("\nPlease Select one of the give options")
+
+        
+    
+        
+            
+            
